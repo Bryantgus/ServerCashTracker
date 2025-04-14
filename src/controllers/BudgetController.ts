@@ -21,6 +21,7 @@ export class BudgetController {
             const budget = new Budget(req.body)
             await budget.save()
             res.status(201).json('Presupuesto Creado Correctamente')
+            return
         } catch (error) {
             // console.log(error);
             res.status(500).json({error: 'Hubo un error'})
