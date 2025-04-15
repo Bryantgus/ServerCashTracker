@@ -16,14 +16,19 @@ export class ExpensesController {
     }
 
     static getById  = async (req: Request, res: Response) => {
-        console.log("desde getbyid");
+        res.send(req.expense)
+        return
     }
 
     static updateById = async (req: Request, res: Response) => {
-        console.log("desdeupdated");
+        req.expense.update(req.body)
+        res.json("Se actualizo correctamente")
+        return
     }
 
     static deleteById = async (req: Request, res: Response) => {
-        console.log("desde delete")
+        req.expense.destroy()
+        res.json("Gasto eliminado")
+        return
     }
 }
