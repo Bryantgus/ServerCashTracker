@@ -42,6 +42,23 @@ export class AuthController {
             res.status(401).json({error: error.message})
         }
         user.confirmed = true
+        await user.save()
+        res.json(user)
+        
+    }
+
+    static login = async (req: Request, res: Response) =>  {
+        const { email, password } = req.body
+        //Prevenir duplicados
+        const userExist = await User.findOne({where: {email}})
+        if(!userExist) {
+            const error = new Error('Usuario no encontrado')
+            res.status(409).json({error: error.message})
+            return
+        }
+
+        
+        
         
     }
 }
