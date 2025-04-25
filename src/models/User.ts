@@ -34,7 +34,7 @@ class User extends Model {
     @Column({
         type: DataType.BOOLEAN
     })
-    declare confirmed: string
+    declare confirmed: Boolean
 
     @HasMany(() => Budget, {
         onUpdate: 'CASCADE',
