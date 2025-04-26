@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import  jwt from "jsonwebtoken";
 import User from "../models/User";
 import { checkPassword, hashPassword } from "../ultis/auth";
 import { generateToken } from "../ultis/token";
@@ -49,7 +50,7 @@ export class AuthController {
     }
 
     static login = async (req: Request, res: Response) =>  {
-        const { email, password, id } = req.body
+        const { email, password } = req.body
         //Revisar que el usuario exista
         const user = await User.findOne({where: {email}})
         if(!user) {
@@ -73,7 +74,7 @@ export class AuthController {
             return
         }
 
-        const token = generateJWT(id)
+        const token = generateJWT(user.id)
         res.json(token)
         return    
     }
@@ -99,8 +100,63 @@ export class AuthController {
         })
         res.json("Revisa tu email para instrucciones")
         return
+    }
 
-      
+    static validateToken = async (req: Request, res: Response) =>  {
+        const { token } = req.body       
+        const tokenExists = await User.findOne({where: {token}})
+        if(!tokenExists) {
+            const error = new Error('Token no valido')
+            res.status(404).json({error: error.message})
+            return
+        }
+        res.json('Token valido')
+        return
+    }
+
+    static resetPassword = async (req: Request, res: Response) =>  {
+        const { token } = req.params
+        const { password } = req.body
+        const user = await User.findOne({where: {token}})
+        if(!user) {
+            const error = new Error('Token no valido')
+            res.status(404).json({error: error.message})
+            return
+        }
+
+        //Asignar nuevo password
+        user.password = await hashPassword(password)
+        user.token = null
+        await user.save()
+        res.json("La Contraseña se modifico correctamente")
+        return
+    }
+
+    static user = async (req: Request, res: Response) =>  {
+        const bearer = req.headers.authorization
+        if(!bearer) {
+            const error = new Error('No Autorizado')
+            res.status(401).json({ error: error.message})
+            return
+        }
+        const [ , token] = bearer.split(" ")
+        if(!token) {
+            const error = new Error('Token no valido')
+            res.status(401).json({ error: error.message})
+            return
+        }
+
+        
+        try {
+            const decoded = jwt.verify(token, "Palabrasecreta")
+            res.json(decoded)
+            return
+            
+        } catch (error) {
+            res.status(500).json({error: "Token no valido"})            
+        }
+        
+
     }
 }
 
