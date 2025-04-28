@@ -149,7 +149,12 @@ export class AuthController {
         
         try {
             const decoded = jwt.verify(token, "Palabrasecreta")
-            res.json(decoded)
+            if(typeof decoded === 'object' && decoded.id) {
+                const user = await User.findByPk(decoded.id, {
+                    attributes: ['id', 'name', 'email']
+                })
+                res.json(user)
+            }
             return
             
         } catch (error) {
